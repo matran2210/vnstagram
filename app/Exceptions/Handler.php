@@ -62,20 +62,20 @@ class Handler extends ExceptionHandler
             $message = $response->renderError($exception->getCode(), $exception->getMessage(), $exception->getData(), null, $exception->getParameters());
         } else if($exception instanceof \Illuminate\Database\QueryException) {
             if($debugMode) {
-                $message = $response->renderError('ECE006', $exception->getMessage(), null, $exception->getMessage());
+                $message = $response->renderError('VNE006', $exception->getMessage(), null, $exception->getMessage());
             }else {
-                $message = $response->renderError('ECE006', null, null, $exception->getMessage());
+                $message = $response->renderError('VNE006', null, null, $exception->getMessage());
             }
         } else if($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException) {
-            $message = $response->renderError('ECE001', null, null, $exception->getMessage());
+            $message = $response->renderError('VNE001', null, null, $exception->getMessage());
         } else if($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
-            $message = $response->renderError('ECE002', null, null, $exception->getMessage());
+            $message = $response->renderError('VNE002', null, null, $exception->getMessage());
         } else {
             //loi chua xac dinh
             if($debugMode) {
-                $message = $response->renderError('ECE999', 'File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage(), null, $exception->getMessage());
+                $message = $response->renderError('VNE999', 'File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage(), null, $exception->getMessage());
             }else {
-                $message = $response->renderError('ECE999', null, null, $exception->getMessage());
+                $message = $response->renderError('VNE999', null, null, $exception->getMessage());
             }
         }
         return $message;

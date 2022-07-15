@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace Api\Users\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,19 +12,17 @@ class User extends Authenticatable
     use Notifiable,HasApiTokens;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
-    protected $fillable = [
-        'name', 'email', 'password',
-    ];
-
-    /**
      * The attributes that should be hidden for arrays.
      *
      * @var array
      */
+
+    public $incrementing = false;
+
+    //ko có $fillable thì phải có $guarded
+    protected $guarded = [
+
+    ];
     protected $hidden = [
         'password', 'remember_token',
     ];

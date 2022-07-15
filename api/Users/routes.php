@@ -1,11 +1,13 @@
 <?php
 
-$module_namespace = "Api\User\Controllers";
+$module_namespace = "Api\Users\Controllers";
 
-// Route::group([
-//     'module' => 'user',
-//     'namespace' => $module_namespace], function () {
-//    // Route::post('/login', 'LoginController@login')->name('login');
+Route::group([
+    'module' => 'user',
+    'prefix' => 'users',
+    'middleware' => 'auth:api',
+    'namespace' => $module_namespace], function () {
+    Route::get('', 'UserController@getAll')->name('getAll');
 
-// });
+});
 

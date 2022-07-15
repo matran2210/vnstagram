@@ -13,7 +13,7 @@ abstract class ApiRequest extends FormRequest
 {
     protected function failedValidation(Validator $validator)
     {
-    	throw new VnException\GeneralException("ECE004", null, null, [$validator->errors()->first()]);
+    	throw new VnException\GeneralException("VNE004", null, null, [$validator->errors()->first()]);
     }
 
     protected function failedAuthorization()
