@@ -11,15 +11,15 @@ use App\Http\Controllers\Controller;
 use Api\Auth\Requests\LoginRequest;
 use Api\Auth\Requests\SignUpRequest;
 use Api\Users\Models\User;
-use App\Exceptions as VNException;
-use App\Libraries\Response as VNResponse;
+use App\Exceptions as VnException;
+use App\Libraries\Response as VnResponse;
 
 class LoginController extends Controller
 {
-	protected $VNResponse;
+	protected $vnResponse;
 
 	public function __construct(
-		VNResponse $vnResponse
+		VnResponse $vnResponse
 	) {
 		$this->vnResponse = $vnResponse;
 	}
@@ -27,15 +27,17 @@ class LoginController extends Controller
 
 	public function signUp(SignUpRequest $request){
 
-		$arrName = explode(' ',$request->full_name);
 		$this->checkExist($request);
+		if($request->password != $request->re_password){
+			throw new VnException\GeneralException("VNE006");
+		}
 		DB::beginTransaction();
 		try{
-			$id =(string)Uuid::uuid();
+			
 			$user = new User([
-				'id'=> $id,
+				'id'=> (string)Uuid::uuid(),
 				'full_name' => $request->full_name,
-				'name' => end($arrName),
+				'name' => $request->name,
 				'email' => $request->email,
 				'mobile' => $request->mobile,
 				'username' => $request->username,
@@ -80,13 +82,13 @@ class LoginController extends Controller
 	//support service
 	private function checkExist($data){
 		if(DB::table('users')->where('username',$data->username)->exists()){
-			throw new VNException\GeneralException('VNE001');
+			throw new VnException\GeneralException('VNE001');
 		}
 		if(DB::table('users')->where('email',$data->email)->exists()){
-			throw new VNException\GeneralException('VNE002');
+			throw new VnException\GeneralException('VNE002');
 		}
 		if(DB::table('users')->where('mobile',$data->mobile)->exists()){
-			throw new VNException\GeneralException('VNE003');
+			throw new VnException\GeneralException('VNE003');
 		}
 	}
 

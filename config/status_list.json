@@ -13,6 +13,10 @@
         "VNE003": "Số điện thoại đã tồn tại",
         "VNE004": "Dữ liệu đầu vào không hợp lệ: $1",
         "VNE005": "Thông tin đăng nhập không chính xác",
+        "VNE006": "Mật khẩu nhập lại không chính xác",
+        "VNE007": "Xác thực basic không chính xác",
+
+        "VNE998": "Đối tượng không tồn tại",
      
 
 
