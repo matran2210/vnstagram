@@ -13,6 +13,7 @@ use App\Libraries\HelperFunction;
 use Api\Posts\Requests\UpdatePostRequest;
 use Api\Posts\Requests\CreatePostRequest;
 use Api\Posts\Models\Post;
+use Storage;
 
 class PostController extends Controller
 {
@@ -37,6 +38,9 @@ class PostController extends Controller
 		DB::beginTransaction();
 		try{
 
+
+			$googleDisk = Storage::disk('google');
+			dd($googleDisk->listContents('/', false));
 			$post = new Post([
 				'id'=> (string)Uuid::uuid(),
 				'user_id' => $user->id,

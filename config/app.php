@@ -176,7 +176,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         Api\ApiServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
-        JeroenG\Flickr\FlickrServiceProvider::class
+        App\Providers\GoogleDriveServiceProvider::class,
 
     ],
 
@@ -229,7 +229,6 @@ return [
         'URL' => Illuminate\Support\Facades\URL::class,
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
-        'Flickr' => JeroenG\Flickr\FlickrLaravelFacade::class,
 
     ],
 
