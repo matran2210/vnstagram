@@ -2,12 +2,12 @@
 
 namespace Api\Posts\Models;
 use Illuminate\Database\Eloquent\Model;
-use Api\Posts\Models\PostFile;
+use Api\Posts\Models\Post;
 
-class Post extends Model
+class PostFile extends Model
 {
 
-    protected $table = 'posts';
+    protected $table = 'post_files';
     protected $keyType = 'string';
     protected $timestamp = false;
     /**
@@ -27,13 +27,9 @@ class Post extends Model
      */
     protected $guarded = [];
 
-
-    /**
-     * Liên kết 1 vs n với bảng post_files
-     */
-    public function postFile()
+    public function post()
     {
-        return $this->hasMany(PostFile::class,'post_id', 'id');
+        return $this->belongsTo(Post::class);
     }
 
 }

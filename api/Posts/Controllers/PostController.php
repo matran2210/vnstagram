@@ -13,7 +13,9 @@ use App\Libraries\HelperFunction;
 use Api\Posts\Requests\UpdatePostRequest;
 use Api\Posts\Requests\CreatePostRequest;
 use Api\Posts\Models\Post;
+use Api\Posts\Models\PostFile;
 use Storage;
+use File;
 
 class PostController extends Controller
 {
@@ -37,10 +39,23 @@ class PostController extends Controller
 		$user = Auth::user();
 		DB::beginTransaction();
 		try{
+			//temp
+			// $pathTemp = config('config.export_dir') .'/a.jpg';
+			// $fileTemp =  File::get($pathTemp);
+
+			// $folderDriver = config('config.google_driver')['folder'];
+			// Storage::disk('google')->put($folderDriver['posts'].'/a.jpg', $fileTemp);
+			// $details = \Storage::disk("google")->getMetadata($folderDriver['posts'].'/a.jpg');
 
 
-			$googleDisk = Storage::disk('google');
-			dd($googleDisk->listContents('/', false));
+			//get file từ id file ($details['path'] là id file)
+			//$file = Storage::disk('google')->get($details['path']);
+
+			//fix tạm
+			$attachFileName = date('Ymdhis').'_'. mt_rand(1000000000, 9999999999) . '_img.jpg';
+			$details['path'] = '1EcgltgvQAKhJ0lzv4C4Xf9g0JbS-aoi7/1A81zRpxY8NImTCg4E9rTYPk0j3Oucxzz';
+
+			//create posts
 			$post = new Post([
 				'id'=> (string)Uuid::uuid(),
 				'user_id' => $user->id,
@@ -49,6 +64,17 @@ class PostController extends Controller
 			]);
 			$post->save();
 
+			//create post_files
+			$postFile = new PostFile([
+				'id'=> (string)Uuid::uuid(),
+				'post_id' => $post->id,
+				'file_name' => $attachFileName,
+				'file_id' => $details['path']
+			]);
+			$postFile->save();
+
+
+			$post['post_files'] = $postFile;
 			DB::commit();
 			return $this->vnResponse->renderSuccess('VNS001', $post);
 		} catch(\Exception $e) {
@@ -56,66 +82,49 @@ class PostController extends Controller
 			throw $e;
 		}
 	}
-	public function update($userId, UpdatePostRequest $request){
-		$this->helperFunction->validateId($userId);
-		$user = User::findOrFail($userId);
-		if(!$user){
-				//đối tượng không tồn tại
+	public function update($postId, UpdatePostRequest $request){
+		$this->helperFunction->validateId($postId);
+		$post = Post::findOrFail($postId);
+		if(!$post){
+			//đối tượng không tồn tại
 			throw new VnException\GeneralException("VNE998");	
 		}
 
-		if(DB::table('users')
-			->where('email',$request->email)
-			->where('id','!=',$user->id)->exists()
-		){
-			throw new VnException\GeneralException("VNE002");
+		DB::beginTransaction();
+		try {
+			$post->title = $request->title;
+			$post->content = $request->content;
+			$post->save();
+
+			//xử lý update file đính kèm
+
+			DB::commit();
+			return $this->vnResponse->renderSuccess('VNS001', $post);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			throw $e;
+		}
 	}
 
-	if(DB::table('users')
-		->where('mobile',$request->mobile)
-		->where('id','!=',$user->id)->exists()
-	){
-		throw new VnException\GeneralException("VNE003");
-}
-
-if($request->password != $request->re_password){
-	throw new VnException\GeneralException("VNE006");			
-}
-
-DB::beginTransaction();
-try {
-	$user->email = $request->email;
-	$user->full_name = $request->full_name;
-	$user->name = $request->name;
-	$user->mobile = $request->mobile;
-	$user->address = $request->address;
-	$user->date_of_birth = $request->date_of_birth;
-	$user->sex = $request->sex;
-	$user->permissions = $request->permissions;
-	$user->save();
-	DB::commit();
-	return $this->vnResponse->renderSuccess('VNS001', $user);
-} catch (\Exception $e) {
-	DB::rollBack();
-	throw $e;
-}
-}
-
-public function delete($userId){
-	$this->helperFunction->validateId($userId);
-	$user = User::findOrFail($userId);
-	if(!$user){
-				//đối tượng không tồn tại
-		throw new VnException\GeneralException("VNE998");	
+	public function delete($postId){
+		$this->helperFunction->validateId($postId);
+		$post = Post::findOrFail($postId);
+		if(!$post){
+			//đối tượng không tồn tại
+			throw new VnException\GeneralException("VNE998");	
+		}
+		$postFiles = $post->postFile;
+		DB::beginTransaction();
+		try {
+			$post->delete();
+			foreach($postFiles as $postFile){
+				$postFile->delete();
+			}
+			DB::commit();
+			return $this->vnResponse->renderSuccess('VNS005');
+		} catch (\Exception $e) {
+			DB::rollBack();
+			throw $e;
+		}
 	}
-	DB::beginTransaction();
-	try {
-		$user->delete();
-		DB::commit();
-		return $this->vnResponse->renderSuccess('VNS005');
-	} catch (\Exception $e) {
-		DB::rollBack();
-		throw $e;
-	}
-}
 }
