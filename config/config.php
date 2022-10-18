@@ -24,7 +24,8 @@ return [
         "folder" => [
             "posts" => '1EcgltgvQAKhJ0lzv4C4Xf9g0JbS-aoi7',
             "comments" => '1_Knw9ofGmE_Su96EIVwmy-QDT70jVnNz',
-            "messages" => '1RSDwnGBPp9a9-AoniEMMeCUU7zH6zyI0'
+            "messages" => '1RSDwnGBPp9a9-AoniEMMeCUU7zH6zyI0',
+            "avatars" => '14DB8ATZPCliMhYqQT1eE2_zX8dvrn2Yx'
         ]
     ]
 ];
