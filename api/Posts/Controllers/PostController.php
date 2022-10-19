@@ -39,22 +39,7 @@ class PostController extends Controller
 		$user = Auth::user();
 		DB::beginTransaction();
 		try{
-			//temp
-			// $pathTemp = config('config.export_dir') .'/a.jpg';
-			// $fileTemp =  File::get($pathTemp);
-
-			// $folderDriver = config('config.google_driver')['folder'];
-			// Storage::disk('google')->put($folderDriver['posts'].'/a.jpg', $fileTemp);
-			// $details = \Storage::disk("google")->getMetadata($folderDriver['posts'].'/a.jpg');
-
-
-			//get file từ id file ($details['path'] là id file)
-			//$file = Storage::disk('google')->get($details['path']);
-
-			//fix tạm
-			$attachFileName = date('Ymdhis').'_'. mt_rand(1000000000, 9999999999) . '_img.jpg';
-			$details['path'] = '1EcgltgvQAKhJ0lzv4C4Xf9g0JbS-aoi7/1A81zRpxY8NImTCg4E9rTYPk0j3Oucxzz';
-
+			
 			//create posts
 			$post = new Post([
 				'id'=> (string)Uuid::uuid(),
@@ -64,17 +49,22 @@ class PostController extends Controller
 			]);
 			$post->save();
 
-			//create post_files
-			$postFile = new PostFile([
-				'id'=> (string)Uuid::uuid(),
-				'post_id' => $post->id,
-				'file_name' => $attachFileName,
-				'file_id' => $details['path']
-			]);
-			$postFile->save();
+			if($request->fileContent){
+				$fileName = $request->fileName;
+				$fileContent = base64_decode(explode(',',$request->fileContent)[1]);
+				$fileId = $this->helperFunction->pushFileGoogleDriver($fileName,$fileContent,'posts');
 
-
-			$post['post_files'] = $postFile;
+				//create post_files
+				$postFile = new PostFile([
+					'id'=> (string)Uuid::uuid(),
+					'post_id' => $post->id,
+					'file_name' => $fileName,
+					'file_id' => $fileId
+				]);
+				$postFile->save();
+				$post['post_files'] = $postFile;
+			}
+			
 			DB::commit();
 			return $this->vnResponse->renderSuccess('VNS001', $post);
 		} catch(\Exception $e) {
