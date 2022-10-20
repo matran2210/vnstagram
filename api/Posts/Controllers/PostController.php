@@ -43,8 +43,7 @@ class PostController extends Controller
 		});
 		$query = $query->orderBy('created_at','DESC')->limit(15);
 		$posts = $query->get();
-		dd($posts);
-		return $posts;
+		return $this->vnResponse->renderSuccess('VNS001', $posts);
 	}
 
 	public function create(CreatePostRequest $request){
