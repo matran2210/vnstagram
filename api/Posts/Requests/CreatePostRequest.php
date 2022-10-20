@@ -14,8 +14,8 @@ class CreatePostRequest extends ApiRequest
     public function rules()
     {
         return [
-            'title'             => 'nullable|max:500',
-            'content'         	=> 'nullable|min:1|max:2000',
+            'title'             => 'required|max:500',
+            'content'         	=> 'required|min:1|max:2000',
         ];
     }
     

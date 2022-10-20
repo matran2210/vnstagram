@@ -32,14 +32,20 @@ class PostController extends Controller
 	}
 
 	public function getAll(){
-		dd(1);
+		$user = Auth::user();
+		 //note* nếu muốn phân trang, dùng skip, ví dụ skip(30), tức là sang trang thứ 3 với (15 row/1 trang)
+		$query = Post::select('id','user_id','title','content','created_at');
+		$query = $query->leftJoin('post_files as pf')->on('pf.post_id')
+		$query = $query->limit(15);
+		$posts = $query->get();
+		return $posts;
 	}
 
 	public function create(CreatePostRequest $request){
 		$user = Auth::user();
 		DB::beginTransaction();
 		try{
-			
+
 			//create posts
 			$post = new Post([
 				'id'=> (string)Uuid::uuid(),
@@ -49,9 +55,10 @@ class PostController extends Controller
 			]);
 			$post->save();
 
-			if($request->fileContent){
-				$fileName = $request->fileName;
-				$fileContent = base64_decode(explode(',',$request->fileContent)[1]);
+			if($request->attachFile){
+				$attachFile = $request->attachFile;
+				$fileName = $attachFile['fileName'];
+				$fileContent = base64_decode(explode(',',$attachFile['fileContent'])[1]);
 				$fileId = $this->helperFunction->pushFileGoogleDriver($fileName,$fileContent,'posts');
 
 				//create post_files
