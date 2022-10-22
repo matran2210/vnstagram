@@ -38,7 +38,7 @@ class HelperFunction{
     {
         //get file content từ id file ($details['path'] là id file)
         $file = Storage::disk('google')->get($fileId);
-        return $file;
+        return base64_encode($file);
     }
 
 }

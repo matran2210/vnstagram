@@ -36,10 +36,14 @@ class PostController extends Controller
 		 //note* nếu muốn phân trang, dùng skip, ví dụ skip(30), tức là sang trang thứ 3 với (15 row/1 trang)
 		$query = Post::select(
 			'posts.id','posts.user_id','posts.title','posts.content','posts.created_at',
-			'post_files.id','post_files.file_id','post_files.file_name'
+			'post_files.id','post_files.file_id','post_files.file_name',
+			'users.full_name','users.avatar'
 		);
 		$query = $query->join('post_files',function ($query1){
 			$query1->on('posts.id','post_files.post_id');
+		});
+		$query = $query->join('users',function ($query1){
+			$query1->on('posts.user_id','users.id');
 		});
 		$query = $query->orderBy('created_at','DESC')->limit(15);
 		$posts = $query->get();
