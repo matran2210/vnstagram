@@ -37,8 +37,14 @@ class HelperFunction{
     public function getFileGoogleDriver($fileId)
     {
         //get file content từ id file ($details['path'] là id file)
-        $file = Storage::disk('google')->get($fileId);
-        return base64_encode($file);
+        try{
+            $file = base64_encode(Storage::disk('google')->get($fileId));
+        }
+        catch(\Exception $e){
+            $file = null;
+        }
+        
+        return $file;
     }
 
 }

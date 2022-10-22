@@ -40,13 +40,17 @@ class PostController extends Controller
 			'users.full_name','users.avatar'
 		);
 		$query = $query->join('post_files',function ($query1){
-			$query1->on('posts.id','post_files.post_id');
+			$query1->on('posts.id','post_files.post_id'); 
 		});
 		$query = $query->join('users',function ($query1){
 			$query1->on('posts.user_id','users.id');
 		});
 		$query = $query->orderBy('created_at','DESC')->limit(15);
 		$posts = $query->get();
+
+		foreach ($posts as $key => $post) {
+			$posts[$key]['file_content'] = $this->helperFunction->getFileGoogleDriver($post->file_id);
+		}
 		return $this->vnResponse->renderSuccess('VNS001', $posts);
 	}
 
@@ -67,7 +71,9 @@ class PostController extends Controller
 			if($request->attachFile){
 				$attachFile = $request->attachFile;
 				$fileName = $attachFile['fileName'];
-				$fileContent = base64_decode(explode(',',$attachFile['fileContent'])[1]);
+				$temp = explode(',',$attachFile['fileContent']);
+				$fileType = $temp[0];
+				$fileContent = base64_decode($temp[1]);
 				$fileId = $this->helperFunction->pushFileGoogleDriver($fileName,$fileContent,'posts');
 
 				//create post_files
@@ -75,7 +81,8 @@ class PostController extends Controller
 					'id'=> (string)Uuid::uuid(),
 					'post_id' => $post->id,
 					'file_name' => $fileName,
-					'file_id' => $fileId
+					'file_id' => $fileId,
+					'file_type' => $fileType
 				]);
 				$postFile->save();
 				$post['post_files'] = $postFile;
