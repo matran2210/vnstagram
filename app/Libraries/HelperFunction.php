@@ -34,6 +34,7 @@ class HelperFunction{
             throw $e;
         }
     }
+
     public function getFileGoogleDriver($fileId)
     {
         //get file content từ id file ($details['path'] là id file)
@@ -45,6 +46,19 @@ class HelperFunction{
         }
         
         return $file;
+    }
+
+    public function deleteFileGoogleDriver($fileId)
+    {
+        //get file content từ id file ($details['path'] là id file)
+        try{
+            $delete = Storage::disk('google')->delete($fileId);
+        }
+        catch(\Exception $e){
+            $delete = null;
+        }
+        
+        return $delete;
     }
 
 }

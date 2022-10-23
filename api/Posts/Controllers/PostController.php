@@ -36,7 +36,7 @@ class PostController extends Controller
 		 //note* nếu muốn phân trang, dùng skip, ví dụ skip(30), tức là sang trang thứ 3 với (15 row/1 trang)
 		$query = Post::select(
 			'posts.id','posts.user_id','posts.title','posts.content','posts.created_at',
-			'post_files.id','post_files.file_id','post_files.file_name',
+			'post_files.id as post_file_id','post_files.file_id','post_files.file_name',
 			'users.full_name','users.avatar'
 		);
 		$query = $query->join('post_files',function ($query1){
@@ -48,10 +48,25 @@ class PostController extends Controller
 		$query = $query->orderBy('created_at','DESC')->limit(15);
 		$posts = $query->get();
 
-		foreach ($posts as $key => $post) {
-			$posts[$key]['file_content'] = $this->helperFunction->getFileGoogleDriver($post->file_id);
-		}
+		// foreach ($posts as $key => $post) {
+		// 	$posts[$key]['file_content'] = $this->helperFunction->getFileGoogleDriver($post->file_id);
+		// }
 		return $this->vnResponse->renderSuccess('VNS001', $posts);
+	}
+
+	public function getById($postId){
+		$user = Auth::user();
+		$post = Post::find($postId);
+
+		$postFile = PostFile::where('post_id',$postId)->first();
+
+		$fileContent = $this->helperFunction->getFileGoogleDriver($postFile->file_id);
+	
+		$post['post_file'] = [
+			'fileName' => $postFile->file_name,
+			'fileContent' => trim($postFile->file_type,' ').','.$fileContent
+		];
+		return $this->vnResponse->renderSuccess('VNS001', $post);
 	}
 
 	public function create(CreatePostRequest $request){
@@ -105,11 +120,40 @@ class PostController extends Controller
 
 		DB::beginTransaction();
 		try {
+			//update post
 			$post->title = $request->title;
 			$post->content = $request->content;
 			$post->save();
 
 			//xử lý update file đính kèm
+			if($request->attachFile){
+
+				$attachFile = $request->attachFile;
+				$fileName = $attachFile['fileName'];
+				$temp = explode(',',$attachFile['fileContent']);
+				$fileType = $temp[0];
+				$fileContent = base64_decode($temp[1]);
+				$fileId = $this->helperFunction->pushFileGoogleDriver($fileName,$fileContent,'posts');
+
+				$postFile = PostFile::where('post_id',$postId)->first();
+				if($postFile){ //update
+					//xóa file_id cũ đi trước
+					$delete = $this->helperFunction->deleteFileGoogleDriver($postFile->file_id);
+					$postFile->file_name = $fileName;
+					$postFile->file_id = $fileId;
+					$postFile->file_type = $fileType;
+				}else{//create
+					$postFile = new PostFile([
+						'id'=> (string)Uuid::uuid(),
+						'post_id' => $post->id,
+						'file_name' => $fileName,
+						'file_id' => $fileId,
+						'file_type' => $fileType
+					]);
+				}
+				$postFile->save();
+				$post['post_files'] = $postFile;
+			}
 
 			DB::commit();
 			return $this->vnResponse->renderSuccess('VNS001', $post);
