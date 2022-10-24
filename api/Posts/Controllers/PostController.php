@@ -39,10 +39,10 @@ class PostController extends Controller
 			'post_files.id as post_file_id','post_files.file_id','post_files.file_name',
 			'users.full_name','users.avatar'
 		);
-		$query = $query->join('post_files',function ($query1){
+		$query = $query->leftjoin('post_files',function ($query1){
 			$query1->on('posts.id','post_files.post_id'); 
 		});
-		$query = $query->join('users',function ($query1){
+		$query = $query->leftjoin('users',function ($query1){
 			$query1->on('posts.user_id','users.id');
 		});
 		$query = $query->orderBy('created_at','DESC')->limit(15);
@@ -59,13 +59,14 @@ class PostController extends Controller
 		$post = Post::find($postId);
 
 		$postFile = PostFile::where('post_id',$postId)->first();
+		if($postFile){
+			$fileContent = $this->helperFunction->getFileGoogleDriver($postFile->file_id);
 
-		$fileContent = $this->helperFunction->getFileGoogleDriver($postFile->file_id);
-	
-		$post['post_file'] = [
-			'fileName' => $postFile->file_name,
-			'fileContent' => trim($postFile->file_type,' ').','.$fileContent
-		];
+			$post['post_file'] = [
+				'fileName' => $postFile->file_name,
+				'fileContent' => trim($postFile->file_type,' ').','.$fileContent
+			];
+		}
 		return $this->vnResponse->renderSuccess('VNS001', $post);
 	}
 
@@ -82,6 +83,7 @@ class PostController extends Controller
 				'content' => $request->content
 			]);
 			$post->save();
+
 
 			if($request->attachFile){
 				$attachFile = $request->attachFile;
@@ -165,7 +167,7 @@ class PostController extends Controller
 
 	public function delete($postId){
 		$this->helperFunction->validateId($postId);
-		$post = Post::findOrFail($postId);
+		$post = Post::find($postId);
 		if(!$post){
 			//đối tượng không tồn tại
 			throw new VnException\GeneralException("VNE998");	
@@ -175,10 +177,12 @@ class PostController extends Controller
 		try {
 			$post->delete();
 			foreach($postFiles as $postFile){
+				//xóa file_id cũ đi trước
+				$delete = $this->helperFunction->deleteFileGoogleDriver($postFile->file_id);
 				$postFile->delete();
 			}
 			DB::commit();
-			return $this->vnResponse->renderSuccess('VNS005');
+			return $this->vnResponse->renderSuccess('VNS001');
 		} catch (\Exception $e) {
 			DB::rollBack();
 			throw $e;
